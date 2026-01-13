@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>KS Pick 3 Grid</title>
+  <meta name="theme-color" content="#0b0b0b" />
+  <link rel="manifest" href="manifest.json" />
+
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --card:#131313;
+      --muted:#a7a7a7;
+      --text:#f2f2f2;
+      --line:#2a2a2a;
+      --btn:#1e1e1e;
+      --btn2:#2a2a2a;
+      --ok:#21c08b;
+      --bad:#ff5b5b;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding:16px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    }
+    h1{
+      margin:0 0 10px 0;
+      font-size:20px;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:14px;
+      line-height:1.35;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding:14px;
+      margin-top:12px;
+    }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    .bar{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(to bottom, rgba(11,11,11,0.96), rgba(11,11,11,0.86));
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 0 12px;
+      margin: -16px -16px 12px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    input{
+      flex: 1 1 140px;
+      min-width: 140px;
+      height: 48px;
+      padding: 0 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background:#0f0f0f;
+      color:var(--text);
+      font-size:18px;
+      letter-spacing: 2px;
+      text-align:center;
+      outline:none;
+    }
+    input:focus{ border-color: #3a3a3a; }
+
+    button{
+      height:48px;
+      padding:0 14px;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background:var(--btn);
+      color:var(--text);
+      font-size:15px;
+      font-weight:600;
+      cursor:pointer;
+      touch-action: manipulation;
+    }
+    button.secondary{ background:var(--btn2); }
+    button:disabled{ opacity:.45; cursor:not-allowed; }
+
+    .status{
+      margin-top:10px;
+      font-size:13px;
+      color:var(--muted);
+      min-height: 18px;
+    }
+    .status.ok{ color: var(--ok); }
+    .status.bad{ color: var(--bad); }
+
+    .label{
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .derived{
+      font-size: 14px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .gridWrap{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, 44px);
+      gap: 10px;
+    }
+
+    .cell{
+      width:44px;
+      height:44px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background:#0f0f0f;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .meta{
+      color:var(--muted);
+      font-size: 13px;
+      line-height:1.4;
+      max-width: 280px;
+    }
+
+    textarea{
+      width:100%;
+      min-height: 220px;
+      padding: 12px;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background:#0f0f0f;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.45;
+      resize: vertical;
+    }
+
+    .pillRow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .pill{
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    @media (max-width: 420px){
+      button{ flex: 1 1 auto; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bar">
+    <h1>KS Pick 3 Grid System</h1>
+    <div class="sub">
+      Mirror (+5), Flip↓ (+3), Flip↑ (−3) → 3×3 grid → touching combos (diagonals allowed, no reuse).
+    </div>
+
+    <div class="row">
+      <input id="inp" inputmode="numeric" pattern="[0-9]*" maxlength="3" placeholder="Enter 3 digits" />
+      <button id="runBtn">Run</button>
+      <button id="copyCombosBtn" class="secondary" disabled>Copy Combos</button>
+      <button id="copyReportBtn" class="secondary" disabled>Copy Report</button>
+      <button id="clearBtn" class="secondary">Clear</button>
+    </div>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <div class="card" id="outCard" style="display:none;">
+    <div class="label">Derived</div>
+    <div id="derived" class="derived mono"></div>
+
+    <div class="gridWrap">
+      <div>
+        <div class="label">Grid</div>
+        <div id="grid" class="grid mono"></div>
+      </div>
+
+      <div class="meta">
+        <div class="label">Output</div>
+        <div class="pillRow">
+          <div class="pill">Touching: 8 directions</div>
+          <div class="pill">No reuse</div>
+          <div class="pill">Copy = one line</div>
+        </div>
+        <div style="margin-top:10px;">
+          Combos count: <b><span id="count"></span></b>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;" class="label">Combos (space-separated)</div>
+    <textarea id="combos" class="mono" readonly></textarea>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+  </html>
